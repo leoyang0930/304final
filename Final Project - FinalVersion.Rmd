@@ -1,0 +1,236 @@
+---
+title: "Critique the points from paper: Are Mentor's Success and Experience Impacting Mentorship"
+subtitle: "Data Analysis and Linear Regression Model"
+author: "Yang LuLuyang"
+date: "21-December-2020"
+abstract: "AlShebli, Bedoor, Kinga Makovi & Talal Rahwan write an article about Mentorship between mentors and their protégé. Their data analysis is based on more than three million mentor–protégé pairs from MAG dataset. AlShebli, Bedoor, Kinga Makovi & Talal Rahwan also found mentor-protégé quality (including mentor's citation, protégé's citation and genders) can impact protégé scientific area. However, some drawbacks are found in their article, in order to criticize this paper, we will use the same dataset to do a more comprehensive data analysis by analyzing other variables in dataset. At the same time, we will fit linear regression model to support critical points."
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+urlcolor: blue
+fontsize: 12pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+__keywords:__ Critique, Mentorship, Linear Regression, Mentor, Protégé, Data Analysis, Data Cleaning, Bar Plot,  Relationship, Female, Male, Citations, Experiences.
+
+__Git:__ https://github.com/leoyang0930/304final
+
+
+# 1. Introduction
+
+## 1.1 Some Background
+
+As introduced at the beginning of abstract, AlShebli, Bedoor, Kinga Makovi & Talal Rahwan did a mentorship analysis based on Microsoft Academic Graph (MAG) dataset ([MAG](https://github.com/bedoor/Mentorship/blob/master/Repository_Data.zip)) on November 2020. This MAG dataset contains millions of mentor-protégé pairs and provide their corresponding personal and academical information like Gender, degree of the mentors prior to mentorship, number of citations each year and etc ([paper](https://www.nature.com/articles/s41467-020-19723-8#Sec1)). In their results section, they present some diagrams to illustrate points that 'big-shot' and 'hub experience' have big impact to protégé's paper quality ([big-shot and hub](https://www.nature.com/articles/s41467-020-19723-8/figures/2)). Moreover, gender also relates to mentorship.  ([Gender](https://www.nature.com/articles/s41467-020-19723-8/figures/3)).  
+
+
+## 1.2 Target of Assignment. 
+
+However, after reading the original paper, there are some doubts come up to minds. Authors use 7 years career experience as a threshold. For example, people who have less than 7-year career experience are considered as junior and more than 7-year career experience are considered as senior. Moreover, if a paper appears multiple authors, then 'junior' authors are treated as protégé and 'senior' authors are treated as mentor([paper](https://www.nature.com/articles/s41467-020-19723-8#Sec1)). In reality, it makes sense that scientific with under 7 years experience really hard to become others mentors, however, authors with different years of academic experience may all protégé under some mentors. When investigating mentorship between mentor and protégé, are mentors' information is really coming from real 'mentor'? In the rest of sections, data and model analysis to investigate mentorship impact to protégé, major standard of this impact is number of citations differences before and after mentorship by using 7-year cutoff data.    
+
+
+## 1.3 Layout of the rest of report
+In the rest of report, (MAG) data ([MAG](https://github.com/bedoor/Mentorship/blob/master/Repository_Data.zip)) will be analyzed about how 'gender','big-shot','hub-experience' related to mentorship (Section 2). Corresponding data analysis results will be shown and explained about pros and cons in the original paper (Section 3). Moreover, linear regression model will be fitted among 'gender','big-shot','hub-experience' and other interested variables (Section 2). Corresponding model results will be shown and interpreted to criticize results in the original paper (Section 3). Finally, conclusions from data and model analysis will be presented, as well as some improvements for next steps (Section 4). Apart from main sections, some citations and related to references will be placed at the end of report.  
+
+
+\newpage
+
+
+# 2. Methodology
+
+As introduced, options 5 was chosen for this assignment. This section mainly introduces methodologies that will be used. Methodologies are for both data and model.  Let's begin with data and and model introduction and descriptions in the following two subsections.  
+
+
+## 2.1 Data
+
+First of all, Microsoft Academic Graph (MAG) data is a real world data instead of a simulation data. It was provided in the descriptions of option 5 in final project requirement ([MAG](https://github.com/bedoor/Mentorship/blob/master)). Below are attributes in the data that will be analyzed, and some of attribute names are easier to know their meanings. We introduce some important attributes that are used to determine impacts of mentorship to protégé. *'AvgBigShot'* and *'AvgHub'* are two independent variables used to describe mentors' success and experiences respectively; *'Pr0tegeGender'* is protégé gender, *'Avg_c5'* and *'Avg_c10'* are two variables that measure number of paper's citations after posting 5 years and 10 years respectively. *'AvgMentorsAcAges'* is average mentors' age. Below are data summary for each variables in the target data.  
+
+
+```{r Read Data,eval = TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+library(arsenal)
+
+Fulldata <- read.csv('Data_7yearcutoff.csv')
+
+summary(Fulldata)
+```
+
+
+In the original data, there are more than 1 million observations and 28 different variables. For investigating impact of mentorship to protégé, we decided to use people whose first publication year is after 2010. Reason is data is collected in 2019, those kind of people are relative new to science career because of their late "first publication". There are about 10,000 people whose first publications are after 2010.  After reduce data size from 1 million to 0.1 million by meaningful logic, *'Avg_c10'* will be treated as response variable, which is considered as impact from mentorship.  Moreover, there are few outliers will be removed from target sample set, data comparison will be presented in section 3.1.  
+
+
+## 2.2 Model
+
+In the original paper, *'AvgBigShot'* and *'AvgHub'* are considered two most important factor that impact protégé. And as described in *section 2.1*, our target sample is scientists whose first publication year is after 2010 and *'Avg_c10'* is response variable to analyze those people's number of citations after their first publication. Since *'Avg_c10'* is a continuous variable, Linear Regression is going to be used against predictors: *'AvgBigShot'*, *'AvgHub'*, *'Pr0tegeGender'* and *'AvgMentorsAcAges'*. Mathematically, general linear regression model can be written as:
+
+$$Y = \beta_0+\beta_1*X_1+\beta_2*X_2+\beta_3*X_3+\beta_4*X_4$$
+Where $Y is 'Avg_c10': Number\ of\ Citations\ in\ 10\ years$.  
+$X_1 is 'AvgBigShot': Average\ Number\ of\ Citations\ of\ Mentors$  
+$X_2 is 'AvgHub': Measure\ experience\ of\ mentors$
+$X_3 is 'Pr0tegeGender': Protege's\ gender$  
+$X_4 is 'AvgMentorsAcAges': Average\ mentors'\ ages$  
+
+However, in this case, *'Avg_c10'* and *'AvgBigShot'*, *'AvgHub'* and *'Pr0tegeGender'* are not necessarily have linear relationship, so variable transformation will be applied with following theoretical model. Data analysis results will be shown in section 3 about predictors pre and post transformation ([Transformation](chrome-extension://ohfgljdgelakfkefopgklcohadegdpjf/https://edoc.hu-berlin.de/bitstream/handle/18452/11842/stein.pdf?sequence=1)).  
+
+$$\sqrt{Y} = \beta_0+\beta_1*\sqrt{X_1}+\beta_2*\sqrt{X_2}+\beta_3*\sqrt{X_3}+\beta_4*X_4$$
+
+For linear regression model, other assumptions need to be met. Linear regression model assumptions including *error normality* and etc. should be checked in the next section. The model can be used for paper Critiques only when all model assumptions are satisfied.  
+
+
+
+\newpage
+
+
+# 3. Results
+
+Section 3 will display analyzed results. Section 3 is divided into two parts, 3.1 presents data analysis results and 3.2 presents model fitting results.  
+
+## 3.1 Data 
+
+3.1 shows data analysis results of interested response variable *'Avg_c10'* and other selected predictors as introduced above. Results presentation includes related plots and tables. There are six plots, and comparing between pre data transformation and post data transformation, we can find that protege's number of citations are not necessary associated with mentors' success and experience for both male and female proteges. As we can see, proteges have large number of citations when mentors' success and experience are relative less. In order to investigate real relationship, following linear regression model will apply.  
+
+```{r Data analysis,eval = TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.width=20}
+library(tidyverse)
+library(ggplot2)
+library(ggpubr)
+
+data2010all <- Fulldata %>% filter(ProtegeFirstPubYear %in% c(2010,2011,2012,2013)) %>%
+  select(AvgBigShot, AvgHub, Pr0tegeGender, AvgMentorsAcAges, Avg_c10)
+
+data2010 <- data2010all %>% filter(Avg_c10 <= 50)
+
+Bigshot_Pre = data2010all %>% ggplot(aes(x=AvgBigShot, y=Avg_c10, shape=Pr0tegeGender,
+                                  color=Pr0tegeGender)) + geom_point() + geom_smooth(method=lm)+
+  labs(title="AvgBigShot VS 10-year Citations (Pre Transformation)") + theme_minimal() +
+  theme(plot.margin = unit(c(0.3,0.3,0.3,0.3),"cm"))
+
+Bigshot_Post = data2010 %>% ggplot(aes(x=AvgBigShot^0.5, y=Avg_c10^0.5, shape=Pr0tegeGender,
+                                  color=Pr0tegeGender)) + geom_point() + geom_smooth(method=lm)+
+  labs(title="AvgBigShot VS 10-year Citations (Post Transformation)") + theme_minimal() + 
+  theme(plot.margin = unit(c(0.3,0.3,0.3,0.3),"cm"))
+
+ggarrange(Bigshot_Pre, Bigshot_Post,ncol = 1, nrow = 2)
+
+AvgHub_Pre = data2010all %>% ggplot(aes(x=AvgHub, y=Avg_c10, shape=Pr0tegeGender, 
+                                     color=Pr0tegeGender)) +
+  geom_point() + labs(title="AvgHub VS 10-year Citations (Pre Transformation)") +
+  theme_minimal() + theme(plot.margin = unit(c(0.3,0.3,0.3,0.3),"cm"))
+
+AvgHub_Post = data2010 %>% ggplot(aes(x=AvgHub^0.5, y=Avg_c10^0.5, shape=Pr0tegeGender,
+                                      color=Pr0tegeGender)) +
+  geom_point() + labs(title="AvgHub VS 10-year Citations (Post Transformation)") +
+  theme_minimal() + theme(plot.margin = unit(c(0.3,0.3,0.3,0.3),"cm"))
+
+ggarrange(AvgHub_Pre, AvgHub_Post,ncol = 1, nrow = 2)
+
+
+AvgMentorsAcAges_Pre = data2010all %>% ggplot(aes(x=AvgMentorsAcAges, y=Avg_c10,
+                                                  shape=Pr0tegeGender,
+                                           color=Pr0tegeGender)) + geom_point() +
+    labs(title="AvgMentorsAcAges VS 10-year Citations (Pre Transformation)") + theme_minimal() +
+  theme(plot.margin = unit(c(0.3,0.3,0.3,0.3),"cm"))
+
+AvgMentorsAcAges_Post = data2010 %>% ggplot(aes(x=AvgMentorsAcAges^0.5,
+                                                y=Avg_c10^0.5,shape=Pr0tegeGender,
+                                           color=Pr0tegeGender)) + geom_point() +
+    labs(title="AvgMentorsAcAges VS 10-year Citations (Post Transformation)") + theme_minimal() + 
+  theme(plot.margin = unit(c(0.3,0.3,0.3,0.3),"cm"))
+
+ggarrange(AvgMentorsAcAges_Pre, AvgMentorsAcAges_Post,ncol = 1, nrow = 2)
+
+
+
+```
+
+
+
+
+
+## 3.2 Model Results 
+
+In section 3.2, we will include model results including coefficient estimation and model diagnostic results. Below are n  
+
+
+
+```{r model analysis,eval = TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+
+data2010$Avg_c10_sqrt = (data2010$Avg_c10)^0.5
+data2010$AvgBigShot_sqrt = (data2010$AvgBigShot)^0.5
+data2010$AvgHub_sqrt = (data2010$AvgHub)^0.5
+data2010$AvgMentorsAcAges_sqrt = (data2010$AvgMentorsAcAges)^0.5
+
+MLR <- lm(Avg_c10_sqrt ~ AvgBigShot_sqrt + AvgHub_sqrt + AvgMentorsAcAges_sqrt + Pr0tegeGender, 
+          data = data2010)
+
+summary(MLR)
+
+residualp <- ggplot(MLR, aes(x = .fitted, y = .resid)) + geom_point() +
+  labs(title="Residual Plot", xlab = "Fitted Value", ylab = "Residuals") + theme_minimal()
+qqplotp <- ggplot(MLR, aes(qqnorm(.stdresid)[[1]], .stdresid))+geom_point(na.rm = TRUE) + 
+  labs(title="QQPlot", xlab = "Theorethical Quantiles", ylab = "Sample Quantiles") + theme_minimal()
+
+
+ggarrange(residualp, qqplotp,ncol = 1, nrow = 2)
+```
+
+From Linear Regression summary results above, most of predictors are significant with very small p-value. Since square root function is monotone increase (for variables greater than zero), we can find that for *'number of citations VS mentors citations'*: one unit increase of square root of *'AvgHub'* causes 0.0416154 unit increase of square root of *'Avg_c10'*; for *'number of citations VS mentors experience'*: one unit increase of square root of *'AvgHub'* causes 0.0038106 unit decrease of square root of *'Avg_c10'*; for *'number of citations VS mentors age'*: one year increase of square root of *'AvgMentorsAcAges'* causes 0.0167876 unit decrease of square root of *'Avg_c10'*.  From model diagnostic, generally, we can find that model's errors are normally distributed and constant but not perfect.  
+
+
+\newpage
+
+
+# 4. Discussion
+
+From Section 1 to Section 3, we did a brief introduction of this assignment and talk about what aspects we want to criticize original paper. In Section 2 and Section 3, we introduced methodologies and corresponding analyzed results. First of all, same as original paper, we use 'number of citations ($C_{10}$)' to measure impact of new scientists, we did some analysis for 'number of citations' and other important predictors mentioned in the paper ([paper](https://www.nature.com/articles/s41467-020-19723-8#Sec1)). Since 'number of citations' is an continuous variable, linear regression is applied. However, we found some response variables and predictors are not linear, so some necessary variable transformations are made to continue modeling. From transformed linear regression model, we find some relationship about impact to protege against their predictors.  
+
+
+## 4.1 Critiques Conclusion:
+
+  1. First of all, from data analysis results from target sample dataset, we can see that new protege's (whose first publication is after 2010) cumulative number of citations in the past 10 years are not necessary highly related to mentors' success, experience.  Because many proteges with large number of citations whose mentors' success and experience are relative less.  
+  
+  2. Secondly, in the original paper's finding. Proteges may benefits from opposite-gender mentorships ([paper](https://www.nature.com/articles/s41467-020-19723-8#Sec1)). However, in the original data, only protege's genders are given but not mentors' age ([Mentorship](https://danieleweeks.github.io/Mentorship/#problem-no-gender-information-for-mentors).    
+  3. Thirdly, from model perspective. We can definitely prove the first Critique's point above. On the other hand, we can see that *'Pr0tegeGender'* is not an significant predictors told by large p-value = 0.886.  
+  
+
+## 4.2 Weakness and Next Steps. 
+
+Finally, some weaknesses and their solutions will be presented to reader in order to make analysis more accurate and less biases.  
+
+__Weaknesses__:  
+
+  1. First weakness is about data subset: in the original data, there are three files and contain millions of records. However, our data analysis only focus on protege whose first publication is after 2010. Although we have a reasonable logic, but this subset are different from the one that were used in the original paper ([paper](https://www.nature.com/articles/s41467-020-19723-8#Sec1)).  
+  2. Second weakness is about standard that measures impact to protege. In both original paper and assignment. *'Number of citations'* are used to measure success for both mentors and protege. In reality, that is not necessary right ([Statistical Modeling](https://statmodeling.stat.columbia.edu/2020/11/19/are-female-scientists-worse-mentors-this-study-pretends-to-know/)).  
+  
+  3. Third weakness is about linear regression model that was fitted. From section 3.2 model diagnostic results, model assumptions are not met for all data points. As a result, model results must have some biases.  
+  
+
+__Next Steps__
+
+  1. All data should be under consideration if computer's GPU allowed. In the original data, there must exist some 'bad' data points, data should be deep dived and cut out logically.  
+  
+  2. Use *'Number of citations'* to measure impact to protege is a weakness in paper also. Our suggestion is to propose a survey to protege, let themselves to rating impact from their mentors. Because *'impact'* is a very subjective factor.  
+  
+  3. Remedy linear regression model according to model diagnostic results. Perform Box-Cox variable transformation for example.  
+  
+  
+  
+# Reference  
+
+Wu, Changbao. Thompson.  2020. "Sampling Theory and Practice. Springer International Publishing."  
+
+
+Bedoor AlShebli, Kinga Makovi, Talal Rahwan. 2020. "The association between early career informal mentorship in academic collaborations and junior author performance"   
+
+
+Jessica Hullman. 2020. "Statistical Modeling, Causal Inference, and Social Science"   
+
+
+Khushbu Kumari, Suniti Yadav, R. Bender, B. Schneider. 2020. "A General Regression Procedure for Method Transformation"   
+
+
+W. Bablok & H. Passing. 1988 "Linear regression analysis study"  
+
+
